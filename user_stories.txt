@@ -1,0 +1,22 @@
+As a guest, I would like to browse the site.
+As a user, I would like to make an account.
+As a user/admin, I would like to login with my credentials.
+As a user, I would like to leave a basic movie reviews (Like/Dislike).
+As a user, I would like to leave a detailed movie review. 
+As a user, I would like to edit my reviews.
+As a user, I would like to delete my reviews.
+As a user, I would like to browse the available movie list.
+As a user, I would like to see all the reviews on a movie.
+As a user, I would like to see the details of a movie.
+As a user, I would like to have a place where i can see all my reviews.
+As a user, I would like to see the highest rated movies.
+As a user, I would like to see the most reviewed movies.
+As a user, I would like a consistent way to access the other pages.
+As an admin, I would like to add new movies to the site.
+As an admin, I would like to edit movies to the site.
+As an admin, I would like to delete movies from the site.
+As an admin, I would like to delete other user reviews.
+As an admin, I would like to ban users from the website.
+As an admin, when i delete a user, i would like a simple way to mass-delete all thier detailed reviews.
+
+
