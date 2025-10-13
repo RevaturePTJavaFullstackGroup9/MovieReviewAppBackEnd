@@ -21,9 +21,10 @@ import java.util.List;
  * Uses {@link MovieServiceInterface} for business logic.
  * @author Kevin Martinez
  */
-@RestController
-@RequestMapping("/api/movies")
 
+@RestController
+@RequestMapping("/api")
+@CrossOrigin(origins = "http://localhost:5173") // optional, for Vite
 public class MovieController {
 
     private final MovieServiceInterface service;
@@ -32,44 +33,35 @@ public class MovieController {
         this.service = service;
     }
 
+    // ---------- PUBLIC ----------
     // GET /api/movies
-    @GetMapping
-    public List<MovieModel> all() {
-        return service.findAll();
-    }
+    @GetMapping("/movies")
+    public List<MovieModel> all() { return service.findAll(); }
 
     // GET /api/movies/{id}
-    @GetMapping("/{id}")
-    public MovieModel one(@PathVariable Long id) {
-        return service.findById(id);
-    }
+    @GetMapping("/movies/{id}")
+    public MovieModel one(@PathVariable Long id) { return service.findById(id); }
 
     // GET /api/movies/search?q=heat
-    @GetMapping("/search")
-    public List<MovieModel> search(@RequestParam("q") String query) {
-        return service.searchByTitle(query);
-    }
+    @GetMapping("/movies/search")
+    public List<MovieModel> search(@RequestParam("q") String q) { return service.searchByTitle(q); }
 
-    // POST /api/movies
-    @PostMapping
+    // ---------- ADMIN ----------
+    // POST /api/admin/movies
+    @PostMapping("/admin/movies")
     public ResponseEntity<MovieModel> create(@Valid @RequestBody MovieModel body) {
         MovieModel saved = service.create(body);
-        return ResponseEntity
-                .created(URI.create("/api/movies/" + saved.getId()))
-                .body(saved);
+        return ResponseEntity.created(URI.create("/api/movies/" + saved.getId())).body(saved);
     }
 
-    // PUT /api/movies/{id}
-    @PutMapping("/{id}")
+    // PUT /api/admin/movies/{id}
+    @PutMapping("/admin/movies/{id}")
     public MovieModel update(@PathVariable Long id, @Valid @RequestBody MovieModel body) {
         return service.update(id, body);
     }
 
-    // DELETE /api/movies/{id}
-    @DeleteMapping("/{id}")
+    // DELETE /api/admin/movies/{id}
+    @DeleteMapping("/admin/movies/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id) {
-        service.delete(id);
-    }
-    
+    public void delete(@PathVariable Long id) { service.delete(id); }
 }
