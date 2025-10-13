@@ -1,4 +1,4 @@
-package com.revature.movie_review_back_end;
+package com.revature.movie_review_back_end.controller;
 
 import java.util.Map;
 

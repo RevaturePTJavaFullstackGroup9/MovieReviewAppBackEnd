@@ -2,7 +2,7 @@
 // It is mapped to the 'movies' table in the database and includes validation and persistence annotations.
 //Author: Kevin Martinez 10/12/2025
 
-package com.revature.movie_review_back_end;
+package com.revature.movie_review_back_end.model;
 
 import jakarta.persistence.*; // JPA annotations for ORM mapping
 import jakarta.validation.constraints.*; // Bean validation annotations
@@ -18,7 +18,7 @@ import java.time.LocalDate; // For release date
 @Setter // Lombok: generates getters
 @NoArgsConstructor // Lombok: generates no-args constructor
 @AllArgsConstructor // Lombok: generates all-args constructor
-public class MovieModel {
+public class Movie {
 
     /**
      * Unique identifier for the movie (Primary Key).

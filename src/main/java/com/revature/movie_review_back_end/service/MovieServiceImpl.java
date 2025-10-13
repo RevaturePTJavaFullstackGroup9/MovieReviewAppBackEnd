@@ -1,10 +1,11 @@
 // Service class that handles business logic for movies.
 // It connects the controller to the repository and manages CRUD operations.
 
-package com.revature.movie_review_back_end;
-import com.revature.movie_review_back_end.MovieModel;
-import com.revature.movie_review_back_end.MovieRepository;
-import com.revature.movie_review_back_end.NotFoundException;
+package com.revature.movie_review_back_end.service;
+import com.revature.movie_review_back_end.exception.NotFoundException;
+import com.revature.movie_review_back_end.model.Movie;
+import com.revature.movie_review_back_end.repo.MovieRepository;
+
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import lombok.*;
@@ -26,13 +27,13 @@ public class MovieServiceImpl implements MovieServiceInterface {
 
     // Get all movies from the database
     @Override
-    public List<MovieModel> findAll() {
+    public List<Movie> findAll() {
         return repo.findAll();
     }
 
     // Find a movie by its ID, or throw an error if not found
     @Override
-    public MovieModel findById(Long id) {
+    public Movie findById(Long id) {
         return repo.findById(id)
                 .orElseThrow(() -> new NotFoundException("Movie not found: id=" + id));
     }
@@ -40,15 +41,15 @@ public class MovieServiceImpl implements MovieServiceInterface {
     // Add a new movie to the database
    
     @Override
-    public MovieModel create(MovieModel movie) {
+    public Movie create(Movie movie) {
         movie.setId(null); // ensure insert
         return repo.save(movie);
     }
 
     // Update an existing movie's details
     @Override
-    public MovieModel update(Long id, MovieModel incoming) {
-        MovieModel existing = findById(id);
+    public Movie update(Long id, Movie incoming) {
+        Movie existing = findById(id);
         // Copy all fields from the incoming movie to the existing one
         existing.setTitle(incoming.getTitle());
         existing.setReleaseDate(incoming.getReleaseDate());
@@ -71,7 +72,7 @@ public class MovieServiceImpl implements MovieServiceInterface {
 
     // Search for movies by part of their title
     @Override
-    public List<MovieModel> searchByTitle(String query) {
+    public List<Movie> searchByTitle(String query) {
         return repo.findByTitleContainingIgnoreCase(query);
     }
 }

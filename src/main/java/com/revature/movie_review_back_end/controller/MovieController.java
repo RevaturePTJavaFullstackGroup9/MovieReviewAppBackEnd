@@ -1,7 +1,8 @@
-package com.revature.movie_review_back_end;
+package com.revature.movie_review_back_end.controller;
 
-import com.revature.movie_review_back_end.MovieModel;
-import com.revature.movie_review_back_end.MovieServiceInterface;
+import com.revature.movie_review_back_end.model.Movie;
+import com.revature.movie_review_back_end.service.MovieServiceInterface;
+
 import jakarta.validation.Valid;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -34,26 +35,26 @@ public class MovieController {
 
     // GET /api/movies
     @GetMapping
-    public List<MovieModel> all() {
+    public List<Movie> all() {
         return service.findAll();
     }
 
     // GET /api/movies/{id}
     @GetMapping("/{id}")
-    public MovieModel one(@PathVariable Long id) {
+    public Movie one(@PathVariable Long id) {
         return service.findById(id);
     }
 
     // GET /api/movies/search?q=heat
     @GetMapping("/search")
-    public List<MovieModel> search(@RequestParam("q") String query) {
+    public List<Movie> search(@RequestParam("q") String query) {
         return service.searchByTitle(query);
     }
 
     // POST /api/movies
     @PostMapping
-    public ResponseEntity<MovieModel> create(@Valid @RequestBody MovieModel body) {
-        MovieModel saved = service.create(body);
+    public ResponseEntity<Movie> create(@Valid @RequestBody Movie body) {
+        Movie saved = service.create(body);
         return ResponseEntity
                 .created(URI.create("/api/movies/" + saved.getId()))
                 .body(saved);
@@ -61,7 +62,7 @@ public class MovieController {
 
     // PUT /api/movies/{id}
     @PutMapping("/{id}")
-    public MovieModel update(@PathVariable Long id, @Valid @RequestBody MovieModel body) {
+    public Movie update(@PathVariable Long id, @Valid @RequestBody Movie body) {
         return service.update(id, body);
     }
 
