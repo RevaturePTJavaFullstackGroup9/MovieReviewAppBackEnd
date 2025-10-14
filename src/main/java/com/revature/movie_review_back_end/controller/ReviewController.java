@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.revature.movie_review_back_end.exception.ReviewNotFoundException;
 import com.revature.movie_review_back_end.model.Review;
+import com.revature.movie_review_back_end.model.ReviewDTO;
 import com.revature.movie_review_back_end.service.ReviewService;
 
 import java.util.List;
@@ -31,8 +32,9 @@ public class ReviewController {
     }
 
     @PostMapping("/reviews")
-    public Review createReview(@RequestBody Review review){
-        return reviewService.createReview(review);
+    public Review createReview(@RequestBody Review review) {
+        Review createdReview = reviewService.createReview(review);
+        return createdReview;
     }
 
     @DeleteMapping("/reviews/{id}")
@@ -53,6 +55,10 @@ public class ReviewController {
     }
     
     // TODO: Get reviews by user ID, and by Movie ID;
-
+    @GetMapping("/movies/{movieId}/reviews")
+    public List<ReviewDTO> getReviewsByMovieId(@PathVariable Long movieId) {
+        List<ReviewDTO> reviews = reviewService.getReviewsByMovieId(movieId);
+        return reviews;
+    }
     
 }

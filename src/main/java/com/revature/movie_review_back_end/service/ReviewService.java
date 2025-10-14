@@ -5,16 +5,18 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.revature.movie_review_back_end.exception.ReviewNotFoundException;
+import com.revature.movie_review_back_end.model.Movie;
 import com.revature.movie_review_back_end.model.Review;
+import com.revature.movie_review_back_end.repo.MovieRepository;
 import com.revature.movie_review_back_end.repo.ReviewRepository;
+import com.revature.movie_review_back_end.model.ReviewDTO;
+
+import lombok.AllArgsConstructor;
 
 @Service
+@AllArgsConstructor
 public class ReviewService {
     private final ReviewRepository reviewRepository;
-
-    public ReviewService(ReviewRepository reviewRepository) {
-        this.reviewRepository = reviewRepository;
-    }
 
     public Review createReview(Review review){
         return reviewRepository.save(review);
@@ -24,13 +26,19 @@ public class ReviewService {
         return reviewRepository.findAll();
     }
 
+    public List<ReviewDTO> getReviewsByMovieId(Long movieId) {
+        List <Review> reviews = reviewRepository.findAllByMovieId(movieId);
+        List <ReviewDTO> reviewDTOs = reviews.stream().map(ReviewDTO::convertToDto).toList();
+        return reviewDTOs;
+    }
+
     public Review updateReview(Long id, Review review) throws ReviewNotFoundException {
         Review existingReview = reviewRepository.findById(id)
                 .orElseThrow(() -> new ReviewNotFoundException("Review not found with id " + id));
 
-        existingReview.setReview_text(review.getReview_text());
-        existingReview.setIs_liked(review.getIs_liked());
-        existingReview.setIs_hidden(review.getIs_hidden());
+        existingReview.setReviewText(review.getReviewText());
+        existingReview.setIsLiked(review.getIsLiked());
+        existingReview.setIsHidden(review.getIsHidden());
 
         return reviewRepository.save(existingReview);
     }
