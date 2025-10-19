@@ -27,14 +27,13 @@ public class ReviewController {
     }
 
     @GetMapping("/reviews")
-    public List<Review> getAllReviews() {
+    public List<ReviewDTO> getAllReviews() {
         return reviewService.getAllReviews();
     }
 
     @PostMapping("/reviews")
-    public Review createReview(@RequestBody Review review) {
-        Review createdReview = reviewService.createReview(review);
-        return createdReview;
+    public ReviewDTO createReview(@RequestBody ReviewDTO review) {
+        return reviewService.createReview(review);
     }
 
     @DeleteMapping("/reviews/{id}")
@@ -44,12 +43,12 @@ public class ReviewController {
     }
 
     @PatchMapping("/reviews/{id}")
-    public Review updateReview(@PathVariable Long id, @RequestBody Review review) throws ReviewNotFoundException{
+    public ReviewDTO updateReview(@PathVariable Long id, @RequestBody Review review) throws ReviewNotFoundException{
         return reviewService.updateReview(id, review);
     }
 
     @GetMapping("/reviews/{id}")
-    public Review getReviewById(@PathVariable Long id) throws ReviewNotFoundException {
+    public ReviewDTO getReviewById(@PathVariable Long id) throws ReviewNotFoundException {
         // Implement get by ID functionality if needed
         return reviewService.getReviewById(id);
     }

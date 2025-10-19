@@ -30,15 +30,22 @@ public class Review {
     */
 
     // This establishes the ManyToOne relationship, BUT it avoids actually storing or loading the movie entity into the review. All we need is the id.
+    /* 
     @ManyToOne(fetch=jakarta.persistence.FetchType.LAZY)
     @JoinColumn(name="movie_id", referencedColumnName="movie_id", insertable = false, updatable = false)
     private Movie movie;
-
+    */
     // This field holds the foreign object's ID for direct manuipulation.
+    /* 
     @Column(name="movie_id")
     @NotNull
     private Long movieId;
-    
+    */
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name="movie_id", referencedColumnName="movie_id")
+    private Movie movie;
+
     private String reviewText;
 
     private Boolean isLiked;

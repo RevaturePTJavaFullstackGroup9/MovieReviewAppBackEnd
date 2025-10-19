@@ -17,13 +17,17 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class ReviewService {
     private final ReviewRepository reviewRepository;
-
-    public Review createReview(Review review){
-        return reviewRepository.save(review);
+    private final MovieRepository movieRepository;
+    
+    public ReviewDTO createReview(ReviewDTO reviewDTO){
+        Review review = ReviewDTO.convertFromDto(reviewDTO, movieRepository);
+        return ReviewDTO.convertToDto(reviewRepository.save(review));
     }
 
-    public List<Review> getAllReviews(){
-        return reviewRepository.findAll();
+    public List<ReviewDTO> getAllReviews(){
+        List <Review> reviews = reviewRepository.findAll();
+        List <ReviewDTO> reviewDTOs = reviews.stream().map(ReviewDTO::convertToDto).toList();
+        return reviewDTOs;
     }
 
     public List<ReviewDTO> getReviewsByMovieId(Long movieId) {
@@ -32,7 +36,7 @@ public class ReviewService {
         return reviewDTOs;
     }
 
-    public Review updateReview(Long id, Review review) throws ReviewNotFoundException {
+    public ReviewDTO updateReview(Long id, Review review) throws ReviewNotFoundException {
         Review existingReview = reviewRepository.findById(id)
                 .orElseThrow(() -> new ReviewNotFoundException("Review not found with id " + id));
 
@@ -40,12 +44,13 @@ public class ReviewService {
         existingReview.setIsLiked(review.getIsLiked());
         existingReview.setIsHidden(review.getIsHidden());
 
-        return reviewRepository.save(existingReview);
+        return ReviewDTO.convertToDto(reviewRepository.save(existingReview));
     }
 
-    public Review getReviewById(Long id) throws ReviewNotFoundException {
-        return reviewRepository.findById(id)
+    public ReviewDTO getReviewById(Long id) throws ReviewNotFoundException {
+        Review review = reviewRepository.findById(id)
                 .orElseThrow(() -> new ReviewNotFoundException("Review not found with id " + id));
+        return ReviewDTO.convertToDto(review);
     }
 
     public void deleteReviewById(Long id) {
