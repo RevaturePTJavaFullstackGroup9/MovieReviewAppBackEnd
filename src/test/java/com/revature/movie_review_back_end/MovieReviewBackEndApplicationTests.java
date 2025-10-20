@@ -8,6 +8,7 @@ class MovieReviewBackEndApplicationTests {
 
 	@Test
 	void contextLoads() {
+		// Does the application start?
 	}
 
 }

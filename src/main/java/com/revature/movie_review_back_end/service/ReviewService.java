@@ -9,6 +9,7 @@ import com.revature.movie_review_back_end.model.Movie;
 import com.revature.movie_review_back_end.model.Review;
 import com.revature.movie_review_back_end.repo.MovieRepository;
 import com.revature.movie_review_back_end.repo.ReviewRepository;
+import com.revature.movie_review_back_end.repo.UserRepository;
 import com.revature.movie_review_back_end.model.ReviewDTO;
 
 import lombok.AllArgsConstructor;
@@ -18,9 +19,10 @@ import lombok.AllArgsConstructor;
 public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final MovieRepository movieRepository;
+    private final UserRepository userRepository;
     
     public ReviewDTO createReview(ReviewDTO reviewDTO){
-        Review review = ReviewDTO.convertFromDto(reviewDTO, movieRepository);
+        Review review = ReviewDTO.convertFromDto(reviewDTO, movieRepository, userRepository);
         return ReviewDTO.convertToDto(reviewRepository.save(review));
     }
 

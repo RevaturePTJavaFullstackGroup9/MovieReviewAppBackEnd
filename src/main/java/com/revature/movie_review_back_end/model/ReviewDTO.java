@@ -4,38 +4,43 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.revature.movie_review_back_end.repo.MovieRepository;
 import com.revature.movie_review_back_end.repo.ReviewRepository;
+import com.revature.movie_review_back_end.repo.UserRepository;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class ReviewDTO {
     // DTO = Data Transfer Object
     private Long reviewId;
+    private Long userId;
     private Long movieId;
     private String reviewText;
     private Boolean isLiked;
     private Boolean isHidden;
 
     public static ReviewDTO convertToDto(Review review) {
-        Long movieId = review.getMovie().getId();
         return new ReviewDTO(
             review.getReviewId(),
-            movieId,
+            review.getUser().getId(),
+            review.getMovie().getId(),
             review.getReviewText(),
             review.getIsLiked(),
             review.getIsHidden()
         );
     }
 
-    public static Review convertFromDto(ReviewDTO reviewDTO, MovieRepository movieRepository){
-        Review review = new Review();
-        review.setReviewId(reviewDTO.getReviewId());
-        review.setMovie(movieRepository.getReferenceById(reviewDTO.getMovieId()));
-        review.setReviewText(reviewDTO.getReviewText());
-        review.setIsLiked(reviewDTO.getIsLiked());
-        review.setIsHidden(reviewDTO.getIsHidden());
-        return review;
+    public static Review convertFromDto(ReviewDTO reviewDTO, MovieRepository movieRepository, UserRepository userRepository){
+        return new Review(
+            reviewDTO.getReviewId(),
+            userRepository.getReferenceById(reviewDTO.getUserId()),
+            movieRepository.getReferenceById(reviewDTO.getMovieId()),
+            reviewDTO.getReviewText(),
+            reviewDTO.getIsLiked(),
+            reviewDTO.getIsHidden()
+        );
     }
 }
