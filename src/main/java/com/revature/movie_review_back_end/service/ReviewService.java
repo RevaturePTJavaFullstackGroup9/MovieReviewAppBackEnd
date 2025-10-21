@@ -1,9 +1,11 @@
 package com.revature.movie_review_back_end.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.revature.movie_review_back_end.exception.ReviewAlreadyPostedException;
 import com.revature.movie_review_back_end.exception.ReviewNotFoundException;
 import com.revature.movie_review_back_end.model.Movie;
 import com.revature.movie_review_back_end.model.Review;
@@ -20,8 +22,14 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final MovieRepository movieRepository;
     private final UserRepository userRepository;
-    
-    public ReviewDTO createReview(ReviewDTO reviewDTO){
+
+    public ReviewDTO createReview(ReviewDTO reviewDTO) throws ReviewAlreadyPostedException{
+        // While the SQL server has contraints to ensure duplicate reviews do not get uploaded,
+        // its still good to catch that ourselves
+        Optional<Review> existingReview = reviewRepository.findByMovieIdAndUserId(reviewDTO.getMovieId(), reviewDTO.getUserId());
+        if (existingReview.isPresent()){
+            throw new ReviewAlreadyPostedException("You have already created a review for this movie! If you wish to edit it, please send a PATCH request instead!");
+        }
         Review review = ReviewDTO.convertFromDto(reviewDTO, movieRepository, userRepository);
         return ReviewDTO.convertToDto(reviewRepository.save(review));
     }
@@ -58,4 +66,6 @@ public class ReviewService {
     public void deleteReviewById(Long id) {
         reviewRepository.deleteById(id);
     }
+
+    
 }

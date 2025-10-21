@@ -14,12 +14,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.jdbc.JdbcTestUtils;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.jdbc.JdbcTestUtils;
 
 import com.revature.movie_review_back_end.controller.MovieController;
 import com.revature.movie_review_back_end.controller.ReviewController;
 import com.revature.movie_review_back_end.controller.UserController;
+import com.revature.movie_review_back_end.exception.ExceptionController;
 import com.revature.movie_review_back_end.model.*;
 import com.revature.movie_review_back_end.repo.ReviewRepository;
 import com.revature.movie_review_back_end.service.ReviewService;
@@ -27,6 +30,7 @@ import com.revature.movie_review_back_end.service.ReviewService;
 import jakarta.transaction.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -65,6 +69,11 @@ public class BackendIntegrationTest {
     private ResponseEntity<ReviewDTO> postReview(Long movieId, Long userId){
         ReviewDTO reviewDTO = new ReviewDTO(null, userId, movieId, "Liked", true, false);
         return restTemplate.postForEntity("/reviews", reviewDTO, ReviewDTO.class);
+    }
+
+    private <T> ResponseEntity<T> postReview(Long movieId, Long userId, Class<T> clazz){
+        ReviewDTO reviewDTO = new ReviewDTO(null, userId, movieId, "Liked", true, false);
+        return restTemplate.postForEntity("/reviews", reviewDTO, clazz);
     }
 
     @Test
@@ -117,4 +126,27 @@ public class BackendIntegrationTest {
         assertThat(users.size()).isOne();
     }
 
+    @Test
+    public void testUserCantLeaveTwoReviewsOnSameMovie(){
+        Long userId = this.postUser().getBody().getId();
+        Long movieId = this.postMovie().getBody().getId();
+        
+        this.postReview(movieId, userId);
+        this.postReview(movieId, userId);
+
+        List<Review> reviews = restTemplate.getForEntity("/reviews", List.class).getBody();
+        assertThat(reviews.size()).isOne();
+    }
+
+    @Test
+    public void testUserGetsErrorWhenLeavingTwoReviewsOnSameMovie(){
+        Long userId = this.postUser().getBody().getId();
+        Long movieId = this.postMovie().getBody().getId();
+
+        this.postReview(movieId, userId);
+        ResponseEntity<ExceptionController.ErrorResponse> response = this.postReview(movieId, userId, ExceptionController.ErrorResponse.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody().getMessage()).isNotBlank();
+    }
 }

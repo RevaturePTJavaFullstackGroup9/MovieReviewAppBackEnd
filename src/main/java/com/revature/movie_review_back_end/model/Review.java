@@ -7,6 +7,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
 import jakarta.persistence.GenerationType;
 import lombok.AllArgsConstructor;
@@ -17,18 +18,20 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name="reviews")
+@Table(name="reviews", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"user_id", "movie_id"})
+})
 public class Review {
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
     private Long reviewId;
     
     @ManyToOne
-    @JoinColumn(name="user_id", referencedColumnName="id")
+    @JoinColumn(name="user_id", referencedColumnName="id", nullable = false)
     private User user;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name="movie_id", referencedColumnName="movie_id")
+    @ManyToOne
+    @JoinColumn(name="movie_id", referencedColumnName="movie_id", nullable = false)
     private Movie movie;
 
     private String reviewText;

@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.revature.movie_review_back_end.exception.ReviewAlreadyPostedException;
 import com.revature.movie_review_back_end.exception.ReviewNotFoundException;
 import com.revature.movie_review_back_end.model.Review;
 import com.revature.movie_review_back_end.model.ReviewDTO;
@@ -32,7 +33,7 @@ public class ReviewController {
     }
 
     @PostMapping("/reviews")
-    public ReviewDTO createReview(@RequestBody ReviewDTO review) {
+    public ReviewDTO createReview(@RequestBody ReviewDTO review) throws ReviewAlreadyPostedException{
         return reviewService.createReview(review);
     }
 
