@@ -31,6 +31,7 @@ import jakarta.transaction.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -57,7 +58,12 @@ public class BackendIntegrationTest {
     }
 
     private ResponseEntity<User> postUser(){
-        User user = new User(null, "test_user", "test_user@mail.com", "password", "USER", "ACTIVE");
+        User user = new User(null, "test_user", "test_user@mail.com", "password", User.Role.USER, User.Status.ACTIVE);
+        return restTemplate.postForEntity("/users", user, User.class);
+    }
+
+    private ResponseEntity<User> postUser(String username, String email){
+        User user = new User(null, username, email, "password", User.Role.USER, User.Status.ACTIVE);
         return restTemplate.postForEntity("/users", user, User.class);
     }
 
@@ -120,8 +126,32 @@ public class BackendIntegrationTest {
     @Test
     public void testNoDuplicateUsers(){
         this.postUser();
-        this.postUser();
+        try{
+            this.postUser();
+        }
+        catch(Exception e){
+            // We don't really care in this test what exception gets thrown if at all
+            // We just want to make sure only one user got posted
+        }
 
+        List<User> users = restTemplate.getForEntity("/users", List.class).getBody();
+        assertThat(users.size()).isOne();
+    }
+
+    @Test
+    public void testUserUsernameUniqueConstraint(){
+        this.postUser("username", "a@mail.com");
+        try { this.postUser("username", "b@mail.com"); } catch (Exception e) {}
+        
+        List<User> users = restTemplate.getForEntity("/users", List.class).getBody();
+        assertThat(users.size()).isOne();
+    }
+
+    @Test
+    public void testUserEmailUniqueConstraint(){
+        this.postUser("username", "a@mail.com");
+        try { this.postUser("other_username", "a@mail.com"); } catch (Exception e) {}
+        
         List<User> users = restTemplate.getForEntity("/users", List.class).getBody();
         assertThat(users.size()).isOne();
     }

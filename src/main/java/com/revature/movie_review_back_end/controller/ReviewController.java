@@ -12,6 +12,7 @@ import com.revature.movie_review_back_end.service.ReviewService;
 
 import java.util.List;
 
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController
+@CrossOrigin(origins = "http://localhost:5173")
 public class ReviewController {
     private final ReviewService reviewService;
 
@@ -54,11 +56,14 @@ public class ReviewController {
         return reviewService.getReviewById(id);
     }
     
-    // TODO: Get reviews by user ID, and by Movie ID;
     @GetMapping("/movies/{movieId}/reviews")
     public List<ReviewDTO> getReviewsByMovieId(@PathVariable Long movieId) {
         List<ReviewDTO> reviews = reviewService.getReviewsByMovieId(movieId);
         return reviews;
     }
     
+    @GetMapping("/movies/{movieId}/average_score")
+    public double getAverageScoreForMovie(@PathVariable Long movieId) {
+        return reviewService.getAverageReviewScoreForMovie(movieId);
+    }
 }
