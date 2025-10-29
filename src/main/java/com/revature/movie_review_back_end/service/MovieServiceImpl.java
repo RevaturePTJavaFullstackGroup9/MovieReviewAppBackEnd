@@ -8,7 +8,6 @@ import com.revature.movie_review_back_end.repo.MovieRepository;
 
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
-import lombok.*;
 
 import java.util.List;
 

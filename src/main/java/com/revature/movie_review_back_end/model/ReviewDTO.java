@@ -1,9 +1,6 @@
 package com.revature.movie_review_back_end.model;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import com.revature.movie_review_back_end.repo.MovieRepository;
-import com.revature.movie_review_back_end.repo.ReviewRepository;
 import com.revature.movie_review_back_end.repo.UserRepository;
 
 import lombok.AllArgsConstructor;

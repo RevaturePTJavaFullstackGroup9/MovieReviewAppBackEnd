@@ -2,36 +2,24 @@ package com.revature.movie_review_back_end.integration_test;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.jdbc.JdbcTestUtils;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestClientResponseException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.jdbc.JdbcTestUtils;
+import org.springframework.core.ParameterizedTypeReference;
 
-import com.revature.movie_review_back_end.controller.MovieController;
-import com.revature.movie_review_back_end.controller.ReviewController;
-import com.revature.movie_review_back_end.controller.UserController;
 import com.revature.movie_review_back_end.exception.ExceptionController;
 import com.revature.movie_review_back_end.model.*;
-import com.revature.movie_review_back_end.repo.ReviewRepository;
-import com.revature.movie_review_back_end.service.ReviewService;
-
-import jakarta.transaction.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowableOfType;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -56,6 +44,12 @@ public class BackendIntegrationTest {
          */
         JdbcTestUtils.deleteFromTables(jdbcTemplate, "reviews", "movies", "users"); 
     }
+
+    // Parameterized Type References for type safety. 
+    // camelCase as its an instance of a class technically, but _t to distinguish it from standard variables
+    ParameterizedTypeReference<List<User>> listUser_t = new ParameterizedTypeReference<List<User>>() {};
+    ParameterizedTypeReference<List<Movie>> listMovie_t = new ParameterizedTypeReference<List<Movie>>() {};
+    ParameterizedTypeReference<List<Review>> listReview_t = new ParameterizedTypeReference<List<Review>>() {};
 
     private ResponseEntity<User> postUser(){
         User user = new User(null, "test_user", "test_user@mail.com", "password", User.Role.USER, User.Status.ACTIVE);
@@ -119,7 +113,8 @@ public class BackendIntegrationTest {
     @Order(4) // So that this runs after the other ones, to prove the state of the DB gets cleaned after tests.
     public void testGetUsersOnEmptyDb(){
         // This test is here to prove the H2 database has not been contaminated by the other tests.
-        List<User> users = restTemplate.getForEntity("/users", List.class).getBody();
+        //List<User> users = restTemplate.getForEntity("/users", List.class).getBody();
+        List<User> users = restTemplate.exchange("/users", HttpMethod.GET, null, listUser_t).getBody();
         assertThat(users.size()).isZero();
     }
 
@@ -134,7 +129,8 @@ public class BackendIntegrationTest {
             // We just want to make sure only one user got posted
         }
 
-        List<User> users = restTemplate.getForEntity("/users", List.class).getBody();
+        //List<User> users = restTemplate.getForEntity("/users", List.class).getBody();
+        List<User> users = restTemplate.exchange("/users", HttpMethod.GET, null, listUser_t).getBody();
         assertThat(users.size()).isOne();
     }
 
@@ -143,7 +139,8 @@ public class BackendIntegrationTest {
         this.postUser("username", "a@mail.com");
         try { this.postUser("username", "b@mail.com"); } catch (Exception e) {}
         
-        List<User> users = restTemplate.getForEntity("/users", List.class).getBody();
+        //List<User> users = restTemplate.getForEntity("/users", List.class).getBody();
+        List<User> users = restTemplate.exchange("/users", HttpMethod.GET, null, listUser_t).getBody();
         assertThat(users.size()).isOne();
     }
 
@@ -152,7 +149,8 @@ public class BackendIntegrationTest {
         this.postUser("username", "a@mail.com");
         try { this.postUser("other_username", "a@mail.com"); } catch (Exception e) {}
         
-        List<User> users = restTemplate.getForEntity("/users", List.class).getBody();
+        //List<User> users = restTemplate.getForEntity("/users", List.class).getBody();
+        List<User> users = restTemplate.exchange("/users", HttpMethod.GET, null, listUser_t).getBody();
         assertThat(users.size()).isOne();
     }
 
@@ -164,7 +162,8 @@ public class BackendIntegrationTest {
         this.postReview(movieId, userId);
         this.postReview(movieId, userId);
 
-        List<Review> reviews = restTemplate.getForEntity("/reviews", List.class).getBody();
+        //List<Review> reviews = restTemplate.getForEntity("/reviews", List.class).getBody();
+        List<Review> reviews = restTemplate.exchange("/reviews", HttpMethod.GET, null, listReview_t).getBody();
         assertThat(reviews.size()).isOne();
     }
 
