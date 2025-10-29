@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 
 import com.revature.movie_review_back_end.exception.ReviewAlreadyPostedException;
 import com.revature.movie_review_back_end.exception.ReviewNotFoundException;
-import com.revature.movie_review_back_end.model.Movie;
 import com.revature.movie_review_back_end.model.Review;
 import com.revature.movie_review_back_end.repo.MovieRepository;
 import com.revature.movie_review_back_end.repo.ReviewRepository;
@@ -51,7 +50,6 @@ public class ReviewService {
                 .orElseThrow(() -> new ReviewNotFoundException("Review not found with id " + id));
 
         existingReview.setReviewText(review.getReviewText());
-        existingReview.setIsLiked(review.getIsLiked());
         existingReview.setIsHidden(review.getIsHidden());
 
         return ReviewDTO.convertToDto(reviewRepository.save(existingReview));
