@@ -50,7 +50,6 @@ public class ReviewService {
                 .orElseThrow(() -> new ReviewNotFoundException("Review not found with id " + id));
 
         existingReview.setReviewText(review.getReviewText());
-        existingReview.setIsLiked(review.getIsLiked());
         existingReview.setIsHidden(review.getIsHidden());
 
         return ReviewDTO.convertToDto(reviewRepository.save(existingReview));

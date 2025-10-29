@@ -67,12 +67,12 @@ public class BackendIntegrationTest {
     }
 
     private ResponseEntity<ReviewDTO> postReview(Long movieId, Long userId){
-        ReviewDTO reviewDTO = new ReviewDTO(null, userId, movieId, "Liked", true, false);
+        ReviewDTO reviewDTO = new ReviewDTO(null, userId, movieId, "Liked", false, "A great movie ", 8);
         return restTemplate.postForEntity("/reviews", reviewDTO, ReviewDTO.class);
     }
 
     private <T> ResponseEntity<T> postReview(Long movieId, Long userId, Class<T> clazz){
-        ReviewDTO reviewDTO = new ReviewDTO(null, userId, movieId, "Liked", true, false);
+        ReviewDTO reviewDTO = new ReviewDTO(null, userId, movieId, "Liked", false, "A great movie ", 8);
         return restTemplate.postForEntity("/reviews", reviewDTO, clazz);
     }
 
@@ -178,4 +178,6 @@ public class BackendIntegrationTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(response.getBody().getMessage()).isNotBlank();
     }
+
+    // TODO: Test for patching a review
 }

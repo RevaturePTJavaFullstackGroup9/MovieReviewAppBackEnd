@@ -16,8 +16,9 @@ public class ReviewDTO {
     private Long userId;
     private Long movieId;
     private String reviewText;
-    private Boolean isLiked;
     private Boolean isHidden;
+    private String reviewTitle;
+    private Integer reviewScore;
 
     public static ReviewDTO convertToDto(Review review) {
         return new ReviewDTO(
@@ -25,8 +26,9 @@ public class ReviewDTO {
             review.getUser().getId(),
             review.getMovie().getId(),
             review.getReviewText(),
-            review.getIsLiked(),
-            review.getIsHidden()
+            review.getIsHidden(),
+            review.getReviewTitle(),
+            review.getReviewScore()
         );
     }
 
@@ -36,8 +38,9 @@ public class ReviewDTO {
             userRepository.getReferenceById(reviewDTO.getUserId()),
             movieRepository.getReferenceById(reviewDTO.getMovieId()),
             reviewDTO.getReviewText(),
-            reviewDTO.getIsLiked(),
-            reviewDTO.getIsHidden()
+            reviewDTO.getIsHidden(),
+            reviewDTO.getReviewTitle(),
+            reviewDTO.getReviewScore()
         );
     }
 }
