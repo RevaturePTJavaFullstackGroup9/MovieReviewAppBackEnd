@@ -74,10 +74,10 @@ public class Movie {
     @Column(name = "sales_millions", precision = 11, scale = 2)
     private BigDecimal salesMillions;
 
-    @Column(name = "poster_url", length = 1000)
+    @Column(name = "poster_url", length = 1000, nullable = false)
     private String posterUrl;
 
-    @Column(name = "synopsis", length=1000)
+    @Column(name = "synopsis", length=1000, nullable = false)
     private String synopsis;
 
 }
