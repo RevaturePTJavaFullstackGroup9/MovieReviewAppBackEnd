@@ -68,8 +68,8 @@ public class BackendIntegrationTest {
     }
 
     private ResponseEntity<Movie> postMovie(){
-        Movie movie = new Movie(null, "Movie 1", LocalDate.now(), "Action", "Director A", "Lead Actor 1", "Lead Actor 2", new BigDecimal(100));
-        return restTemplate.postForEntity("/api/movies", movie, Movie.class);
+        Movie movie = new Movie(null, "Movie 1", LocalDate.now(), "Action", "Director A", "Lead Actor 1", "Lead Actor 2", new BigDecimal(100), "www.posterUrl.com", "This movie involved people.");
+        return restTemplate.postForEntity("/api/admin/movies", movie, Movie.class);
     }
 
     private ResponseEntity<ReviewDTO> postReview(Long movieId, Long userId){

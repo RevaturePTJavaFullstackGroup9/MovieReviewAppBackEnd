@@ -23,7 +23,7 @@ import java.util.List;
  * @author Kevin Martinez
  */
 @RestController
-@RequestMapping("/api/movies")
+@RequestMapping("/api")
 @CrossOrigin(origins = "http://localhost:5173")
 public class MovieController {
 
@@ -33,41 +33,41 @@ public class MovieController {
         this.service = service;
     }
 
+    // ---------- PUBLIC ----------
     // GET /api/movies
-    @GetMapping
+    @GetMapping("/movies")
     public List<Movie> all() {
         return service.findAll();
     }
 
     // GET /api/movies/{id}
-    @GetMapping("/{id}")
+    @GetMapping("/movies/{id}")
     public Movie one(@PathVariable Long id) {
         return service.findById(id);
     }
 
     // GET /api/movies/search?q=heat
-    @GetMapping("/search")
+    @GetMapping("/movies/search")
     public List<Movie> search(@RequestParam("q") String query) {
         return service.searchByTitle(query);
     }
 
-    // POST /api/movies
-    @PostMapping
+    // ---------- ADMIN ----------
+    // POST /api/admin/movies
+    @PostMapping("/admin/movies")
     public ResponseEntity<Movie> create(@Valid @RequestBody Movie body) {
         Movie saved = service.create(body);
-        return ResponseEntity
-                .created(URI.create("/api/movies/" + saved.getId()))
-                .body(saved);
+        return ResponseEntity.created(URI.create("/api/movies/" + saved.getId())).body(saved);
     }
 
-    // PUT /api/movies/{id}
-    @PutMapping("/{id}")
+    // PUT /api/admin/movies/{id}
+    @PutMapping("/admin/movies/{id}")
     public Movie update(@PathVariable Long id, @Valid @RequestBody Movie body) {
         return service.update(id, body);
     }
 
-    // DELETE /api/movies/{id}
-    @DeleteMapping("/{id}")
+    // DELETE /api/admin/movies/{id}
+    @DeleteMapping("/admin/movies/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
         service.delete(id);
