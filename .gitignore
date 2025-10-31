@@ -34,3 +34,4 @@ build/
 
 ### DB Info ###
 /src/main/resources/db-info.properties
+src/main/resources/jwt-secrets.properties

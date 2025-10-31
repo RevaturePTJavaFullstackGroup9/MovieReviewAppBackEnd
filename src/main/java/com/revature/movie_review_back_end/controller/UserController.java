@@ -33,7 +33,7 @@ public class UserController {
     }
 
     @GetMapping("/search")
-    public List<User> getUserByUsername(@RequestParam String username) {
+    public User getUserByUsername(@RequestParam String username) {
         return userService.getUserByUsername(username);
     }
 

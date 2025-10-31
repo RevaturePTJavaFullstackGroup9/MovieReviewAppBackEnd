@@ -3,6 +3,8 @@ package com.revature.movie_review_back_end.service;
 
 import java.util.List;
 import org.springframework.stereotype.Service;
+
+import com.revature.movie_review_back_end.exception.NotFoundException;
 import com.revature.movie_review_back_end.model.User;
 import com.revature.movie_review_back_end.repo.UserRepository;
 
@@ -27,8 +29,8 @@ public class UserService {
         return userRepository.findById(id).orElse(null);
     }
 
-    public List<User> getUserByUsername(String username) {
-        return userRepository.findByUsername(username);
+    public User getUserByUsername(String username) throws NotFoundException {
+        return userRepository.findByUsername(username).orElseThrow(()-> new NotFoundException("User with username " + username + " not found."));
     }
 
     public void deleteUser(Long id) {
