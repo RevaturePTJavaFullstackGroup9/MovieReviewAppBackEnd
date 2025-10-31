@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
@@ -34,6 +34,7 @@ public class ReviewController {
     }
 
     @PostMapping("/reviews")
+    @PreAuthorize("isAuthenticated() && #review.getUserId() == authentication.principal.id")
     public ReviewDTO createReview(@RequestBody ReviewDTO review) throws ReviewAlreadyPostedException{
         return reviewService.createReview(review);
     }

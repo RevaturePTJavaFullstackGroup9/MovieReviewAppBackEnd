@@ -4,7 +4,10 @@ import com.revature.movie_review_back_end.model.Movie;
 import com.revature.movie_review_back_end.service.MovieServiceInterface;
 
 import jakarta.validation.Valid;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -26,7 +29,6 @@ import java.util.List;
 @RequestMapping("/api")
 @CrossOrigin(origins = "http://localhost:5173")
 public class MovieController {
-
     private final MovieServiceInterface service;
 
     public MovieController(MovieServiceInterface service) {

@@ -1,5 +1,6 @@
 package com.revature.movie_review_back_end.integration_test;
 
+import org.aspectj.bridge.Message;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -8,20 +9,29 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.jdbc.JdbcTestUtils;
+import org.springframework.util.MultiValueMap;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.core.ParameterizedTypeReference;
 
 import com.revature.movie_review_back_end.exception.ExceptionController;
 import com.revature.movie_review_back_end.model.*;
+import com.revature.movie_review_back_end.security.payloads.JwtResponse;
+import com.revature.movie_review_back_end.security.payloads.LoginRequest;
+import com.revature.movie_review_back_end.security.payloads.MessageResponse;
+import com.revature.movie_review_back_end.security.payloads.SignupRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.net.http.HttpRequest;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -66,6 +76,7 @@ public class BackendIntegrationTest {
         return restTemplate.postForEntity("/api/admin/movies", movie, Movie.class);
     }
 
+    
     private ResponseEntity<ReviewDTO> postReview(Long movieId, Long userId){
         ReviewDTO reviewDTO = new ReviewDTO(null, userId, movieId, "Liked", false, "A great movie ", 8);
         return restTemplate.postForEntity("/reviews", reviewDTO, ReviewDTO.class);
@@ -75,6 +86,7 @@ public class BackendIntegrationTest {
         ReviewDTO reviewDTO = new ReviewDTO(null, userId, movieId, "Liked", false, "A great movie ", 8);
         return restTemplate.postForEntity("/reviews", reviewDTO, clazz);
     }
+    
 
     @Test
     @Order(1)
@@ -99,10 +111,14 @@ public class BackendIntegrationTest {
     @Test
     @Order(3)
     public void testCreateReview(){
-        Long userId = this.postUser().getBody().getId();
+        userSignup();
+        JwtResponse jwtResponse = userLogin().getBody();
+        String token = jwtResponse.getToken();
+        Long userId = jwtResponse.getId();
+
         Long movieId = this.postMovie().getBody().getId();
         
-        ResponseEntity<ReviewDTO> postReviewResponse = postReview(movieId, userId);
+        ResponseEntity<ReviewDTO> postReviewResponse = postAuthenticatedReview(movieId, userId, token, ReviewDTO.class);
         Long reviewId = postReviewResponse.getBody().getReviewId();
 
         assertThat(postReviewResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -154,13 +170,18 @@ public class BackendIntegrationTest {
         assertThat(users.size()).isOne();
     }
 
+
+
     @Test
     public void testUserCantLeaveTwoReviewsOnSameMovie(){
-        Long userId = this.postUser().getBody().getId();
+        userSignup();
+        JwtResponse jwtResponse = userLogin().getBody();
+        String token = jwtResponse.getToken();
+        Long userId = jwtResponse.getId();
         Long movieId = this.postMovie().getBody().getId();
         
-        this.postReview(movieId, userId);
-        this.postReview(movieId, userId);
+        this.postAuthenticatedReview(movieId, userId, token, ReviewDTO.class);
+        this.postAuthenticatedReview(movieId, userId, token, ExceptionController.ErrorResponse.class);
 
         //List<Review> reviews = restTemplate.getForEntity("/reviews", List.class).getBody();
         List<Review> reviews = restTemplate.exchange("/reviews", HttpMethod.GET, null, listReview_t).getBody();
@@ -169,15 +190,126 @@ public class BackendIntegrationTest {
 
     @Test
     public void testUserGetsErrorWhenLeavingTwoReviewsOnSameMovie(){
-        Long userId = this.postUser().getBody().getId();
+        userSignup();
+        JwtResponse jwtResponse = userLogin().getBody();
+        String token = jwtResponse.getToken();
+        Long userId = jwtResponse.getId();
+
         Long movieId = this.postMovie().getBody().getId();
 
-        this.postReview(movieId, userId);
-        ResponseEntity<ExceptionController.ErrorResponse> response = this.postReview(movieId, userId, ExceptionController.ErrorResponse.class);
+        this.postAuthenticatedReview(movieId, userId, token, ReviewDTO.class);
+        ResponseEntity<ExceptionController.ErrorResponse> response = this.postAuthenticatedReview(movieId, userId, token, ExceptionController.ErrorResponse.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(response.getBody().getMessage()).isNotBlank();
     }
 
+
+
+    // Auth Tests
+    private ResponseEntity<MessageResponse> userSignup(String username, String email, String password, User.Role role){
+        SignupRequest signupRequest = new SignupRequest(username, email, password, role);
+        HttpEntity<SignupRequest> httpEntity = new HttpEntity<>(signupRequest);
+        return restTemplate.exchange("/api/auth/signup", HttpMethod.POST, httpEntity, MessageResponse.class);
+    }
+
+    private ResponseEntity<MessageResponse> userSignup(){
+        return userSignup("test", "test@mail.com", "password", User.Role.USER);
+    }
+
+    private ResponseEntity<JwtResponse> userLogin(){
+        return userLogin("test", "password");
+    }
+
+    private ResponseEntity<JwtResponse> userLogin(String username, String password){
+        LoginRequest loginRequest = new LoginRequest(username, password);
+        HttpEntity<LoginRequest> httpEntityLoginRequest = new HttpEntity<>(loginRequest);
+        return restTemplate.exchange("/api/auth/login", HttpMethod.POST, httpEntityLoginRequest, JwtResponse.class);
+    }
+
+    private <T> ResponseEntity<T> postAuthenticatedReview(ReviewDTO reviewDTO, String token, Class<T> clazz){
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(token);
+        HttpEntity<ReviewDTO> postReviewHttpEntity = new HttpEntity<>(reviewDTO, headers);
+        return restTemplate.exchange("/reviews", HttpMethod.POST, postReviewHttpEntity, clazz);
+    }
+
+    private <T> ResponseEntity<T> postAuthenticatedReview(Long movieId, Long userId, String token, Class<T> clazz){
+        ReviewDTO reviewDTO = new ReviewDTO(null, userId, movieId, "Ok", false, "Title", 10);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(token);
+        HttpEntity<ReviewDTO> postReviewHttpEntity = new HttpEntity<>(reviewDTO, headers);
+        return restTemplate.exchange("/reviews", HttpMethod.POST, postReviewHttpEntity, clazz);
+    }
+
+    @Test
+    public void testUserSignupAndLoginWithJwt(){
+        // Test Sign Up
+        String username = "User";
+        String email = "auth1@mail.com";
+        String password = "password";
+        SignupRequest signupRequest = new SignupRequest(username, email, password, User.Role.USER);
+        HttpEntity<SignupRequest> httpEntity = new HttpEntity<SignupRequest>(signupRequest);
+        ResponseEntity<MessageResponse> response = restTemplate.exchange("/api/auth/signup", HttpMethod.POST, httpEntity, MessageResponse.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        
+        // Test Login
+        LoginRequest loginRequest = new LoginRequest(username, password);
+        HttpEntity<LoginRequest> httpEntityLoginRequest = new HttpEntity<LoginRequest>(loginRequest);
+        ResponseEntity<JwtResponse> loginResponse = restTemplate.exchange("/api/auth/login", HttpMethod.POST, httpEntityLoginRequest, JwtResponse.class);
+        assertThat(loginResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        String token = loginResponse.getBody().getToken();
+        Long userId = loginResponse.getBody().getId();
+        
+        // Post a movie so we can post review
+        Long movieId = this.postMovie().getBody().getId();
+
+        // Test Posting Review As User
+        ReviewDTO reviewDTO = new ReviewDTO(null, userId, movieId, "This movie is awesome", false, "Movie title", 10);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(token);
+        HttpEntity<ReviewDTO> postReviewHttpEntity = new HttpEntity<>(reviewDTO, headers);
+        ResponseEntity<ReviewDTO> postReviewResponse = restTemplate.exchange("/reviews", HttpMethod.POST, postReviewHttpEntity, ReviewDTO.class);
+        
+        assertThat(postReviewResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        List<Review> reviews = restTemplate.exchange("/reviews", HttpMethod.GET, null, listReview_t).getBody();
+        assertThat(reviews.size()).isOne();
+        
+    }
+
+    @Test
+    public void testUnauthorizedUserCantLeaveReview() {
+        Long userId = this.postUser().getBody().getId();
+        Long movieId = this.postMovie().getBody().getId();
+
+        ResponseEntity<ExceptionController.ErrorResponse> response = this.postReview(movieId, userId, ExceptionController.ErrorResponse.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    public void testUserCantLeaveAReviewForAnotherUser() {
+        userSignup("userA", "a@mail.com", "password", User.Role.USER);
+        Long userAId = userLogin("userA", "password").getBody().getId();
+        
+        userSignup("userB", "b@mail.com", "password", User.Role.USER);
+        ResponseEntity<JwtResponse> loginResponse = userLogin("userB", "password");
+        String token = loginResponse.getBody().getToken();
+        Long userBId = loginResponse.getBody().getId();
+
+        Long movieId = this.postMovie().getBody().getId();
+
+        ReviewDTO reviewDTO = new ReviewDTO(null, userAId, movieId, "Ok", false, "Title", 10);
+        ResponseEntity<ExceptionController.ErrorResponse> postMovieResponse = this.postAuthenticatedReview(reviewDTO, token, ExceptionController.ErrorResponse.class);
+        assertThat(postMovieResponse.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+
+        List<Review> reviews = restTemplate.exchange("/reviews", HttpMethod.GET, null, listReview_t).getBody();
+        assertThat(reviews.size()).isZero();
+
+    }
     // TODO: Test for patching a review
 }
