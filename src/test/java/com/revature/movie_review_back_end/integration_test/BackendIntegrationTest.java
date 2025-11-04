@@ -1,6 +1,7 @@
 package com.revature.movie_review_back_end.integration_test;
 
 import org.aspectj.bridge.Message;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -22,13 +23,19 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.core.ParameterizedTypeReference;
 
 import com.revature.movie_review_back_end.exception.ExceptionController;
+import com.revature.movie_review_back_end.exception.ReviewAlreadyPostedException;
 import com.revature.movie_review_back_end.model.*;
+import com.revature.movie_review_back_end.repo.MovieRepository;
+import com.revature.movie_review_back_end.repo.ReviewRepository;
 import com.revature.movie_review_back_end.security.payloads.JwtResponse;
 import com.revature.movie_review_back_end.security.payloads.LoginRequest;
 import com.revature.movie_review_back_end.security.payloads.MessageResponse;
 import com.revature.movie_review_back_end.security.payloads.SignupRequest;
+import com.revature.movie_review_back_end.service.MovieServiceImpl;
+import com.revature.movie_review_back_end.service.ReviewService;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import java.math.BigDecimal;
 import java.net.http.HttpRequest;
@@ -45,6 +52,15 @@ public class BackendIntegrationTest {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private MovieRepository movieRepository;
+
+    @Autowired
+    private ReviewRepository reviewRepository;
+
+    @Autowired 
+    private ReviewService reviewService;
 
     @BeforeEach
     void tearDown() {
@@ -76,7 +92,11 @@ public class BackendIntegrationTest {
         return restTemplate.postForEntity("/api/admin/movies", movie, Movie.class);
     }
 
-    
+    private ResponseEntity<ReviewDTO> postReview(Long movieId, Long userId, Integer reviewScore){
+        ReviewDTO reviewDTO = new ReviewDTO(null, userId, movieId, "Liked", false, "A great movie ", reviewScore);
+        return restTemplate.postForEntity("/reviews", reviewDTO, ReviewDTO.class);
+    }
+
     private ResponseEntity<ReviewDTO> postReview(Long movieId, Long userId){
         ReviewDTO reviewDTO = new ReviewDTO(null, userId, movieId, "Liked", false, "A great movie ", 8);
         return restTemplate.postForEntity("/reviews", reviewDTO, ReviewDTO.class);
@@ -311,5 +331,33 @@ public class BackendIntegrationTest {
         assertThat(reviews.size()).isZero();
 
     }
+    
+    // TODO: Test getting average score
+    @Test
+    public void testAverageReviewScoreForMovie(){
+        Long userIdA = this.postUser("a", "a@mail.com").getBody().getId();
+        Long userIdB = this.postUser("b", "b@mail.com").getBody().getId();
+        Long movieId = this.postMovie().getBody().getId();
+
+        assertDoesNotThrow(() -> reviewService.createReview(new ReviewDTO(null, userIdA, movieId, "reviewTest", false, "reviewTitle", 10)));
+        assertDoesNotThrow(() -> reviewService.createReview(new ReviewDTO(null, userIdB, movieId, "reviewTest", false, "reviewTitle", 2)));
+        
+        Double averageReviewScore = reviewRepository.findAverageReviewScoreByMovieId(movieId);
+
+        assertThat(averageReviewScore).isEqualTo(6.0);
+        assertThat(reviewService.getAverageReviewScoreForMovie(movieId)).isEqualTo(6.0);
+    }
+
+    @Test
+    public void testAverageReviewScoreReturnsZeroForMovieWithNoReviews(){
+        Long movieId = this.postMovie().getBody().getId();
+        Double reviewScore;
+
+        reviewScore = assertDoesNotThrow(() -> reviewService.getAverageReviewScoreForMovie(movieId));
+        assertThat(reviewScore).isEqualTo(0.0);
+        
+    }
     // TODO: Test for patching a review
+    // TODO: Test user can't register with blank username / email / password 
+    // TODO: Provide a 4XX Error for registering a duplicate user.
 }

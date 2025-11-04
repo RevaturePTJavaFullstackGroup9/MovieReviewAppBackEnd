@@ -63,7 +63,7 @@ public class ReviewController {
     }
     
     @GetMapping("/movies/{movieId}/average_score")
-    public double getAverageScoreForMovie(@PathVariable Long movieId) {
+    public Double getAverageScoreForMovie(@PathVariable Long movieId) {
         return reviewService.getAverageReviewScoreForMovie(movieId);
     }
 }

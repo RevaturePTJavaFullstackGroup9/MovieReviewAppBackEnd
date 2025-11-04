@@ -65,7 +65,11 @@ public class ReviewService {
         reviewRepository.deleteById(id);
     }
 
-    public double getAverageReviewScoreForMovie(Long movieId){
+    public Double getAverageReviewScoreForMovie(Long movieId){
+        Double result = reviewRepository.findAverageReviewScoreByMovieId(movieId);
+        if (result == null){
+            return 0.0;
+        }
         return reviewRepository.findAverageReviewScoreByMovieId(movieId);
     }
     

@@ -13,6 +13,6 @@ import com.revature.movie_review_back_end.model.Review;
 public interface ReviewRepository extends JpaRepository<Review, Long>{
     List<Review> findAllByMovieId(Long movieId);
     Optional<Review> findByMovieIdAndUserId(Long movieId, Long userId);
-    @Query("SELECT AVG(r.reviewScore) FROM Review r JOIN r.movie m WHERE m.id = :movieId")
+    @Query("SELECT AVG(r.reviewScore) FROM Review r JOIN r.movie m WHERE m.id = :movieId GROUP BY m.id")
     Double findAverageReviewScoreByMovieId(@Param("movieId") Long movieId);
 }
