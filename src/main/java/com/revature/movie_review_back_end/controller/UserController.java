@@ -9,6 +9,7 @@ import com.revature.movie_review_back_end.model.User;
 
 @RestController
 @RequestMapping("/users")
+@CrossOrigin(origins = "http://localhost:5173")
 public class UserController {
 
     private final UserService userService;

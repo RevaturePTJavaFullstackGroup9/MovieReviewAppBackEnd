@@ -2,6 +2,7 @@ package com.revature.movie_review_back_end.controller;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.revature.movie_review_back_end.exception.ReviewAlreadyPostedException;
@@ -18,9 +19,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
+@RequestMapping("/api")
 public class ReviewController {
     private final ReviewService reviewService;
 
@@ -46,7 +50,8 @@ public class ReviewController {
     }
 
     @PatchMapping("/reviews/{id}")
-    public ReviewDTO updateReview(@PathVariable Long id, @RequestBody Review review) throws ReviewNotFoundException{
+    @PreAuthorize("isAuthenticated() && #review.getUserId() == authentication.principal.id")
+    public ReviewDTO updateReview(@PathVariable Long id, @RequestBody ReviewDTO review) throws ReviewNotFoundException{
         return reviewService.updateReview(id, review);
     }
 
@@ -66,4 +71,10 @@ public class ReviewController {
     public Double getAverageScoreForMovie(@PathVariable Long movieId) {
         return reviewService.getAverageReviewScoreForMovie(movieId);
     }
+
+    @GetMapping("/movies/{movieId}/reviews/search")
+    public ReviewDTO getReviewByMovieAndUser(@PathVariable Long movieId, @RequestParam Long userId) throws ReviewNotFoundException {
+        return reviewService.getReviewByMovieAndUser(movieId, userId);
+    }
+    
 }
