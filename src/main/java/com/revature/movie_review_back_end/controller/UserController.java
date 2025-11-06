@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import com.revature.movie_review_back_end.service.UserService;
 import com.revature.movie_review_back_end.model.User;
 
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/users")
 public class UserController {
