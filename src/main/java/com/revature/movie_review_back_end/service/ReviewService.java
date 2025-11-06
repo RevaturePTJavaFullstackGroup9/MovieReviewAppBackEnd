@@ -45,12 +45,14 @@ public class ReviewService {
         return reviewDTOs;
     }
 
-    public ReviewDTO updateReview(Long id, Review review) throws ReviewNotFoundException {
+    public ReviewDTO updateReview(Long id, ReviewDTO reviewDTO) throws ReviewNotFoundException {
         Review existingReview = reviewRepository.findById(id)
                 .orElseThrow(() -> new ReviewNotFoundException("Review not found with id " + id));
 
-        existingReview.setReviewText(review.getReviewText());
-        existingReview.setIsHidden(review.getIsHidden());
+        existingReview.setReviewText(reviewDTO.getReviewText());
+        existingReview.setIsHidden(reviewDTO.getIsHidden());
+        existingReview.setReviewScore(reviewDTO.getReviewScore());
+        existingReview.setReviewTitle(reviewDTO.getReviewTitle());
 
         return ReviewDTO.convertToDto(reviewRepository.save(existingReview));
     }
@@ -73,4 +75,9 @@ public class ReviewService {
         return reviewRepository.findAverageReviewScoreByMovieId(movieId);
     }
     
+    public ReviewDTO getReviewByMovieAndUser(Long movieId, Long userId) throws ReviewNotFoundException{
+        Review review = reviewRepository.findByMovieIdAndUserId(movieId, userId).orElseThrow(()->new ReviewNotFoundException("No movie found for movieId of "+movieId+" and userId of " + userId));
+        return ReviewDTO.convertToDto(review);
+    }
+
 }

@@ -94,17 +94,17 @@ public class BackendIntegrationTest {
 
     private ResponseEntity<ReviewDTO> postReview(Long movieId, Long userId, Integer reviewScore){
         ReviewDTO reviewDTO = new ReviewDTO(null, userId, movieId, "Liked", false, "A great movie ", reviewScore);
-        return restTemplate.postForEntity("/reviews", reviewDTO, ReviewDTO.class);
+        return restTemplate.postForEntity("/api/reviews", reviewDTO, ReviewDTO.class);
     }
 
     private ResponseEntity<ReviewDTO> postReview(Long movieId, Long userId){
         ReviewDTO reviewDTO = new ReviewDTO(null, userId, movieId, "Liked", false, "A great movie ", 8);
-        return restTemplate.postForEntity("/reviews", reviewDTO, ReviewDTO.class);
+        return restTemplate.postForEntity("/api/reviews", reviewDTO, ReviewDTO.class);
     }
 
     private <T> ResponseEntity<T> postReview(Long movieId, Long userId, Class<T> clazz){
         ReviewDTO reviewDTO = new ReviewDTO(null, userId, movieId, "Liked", false, "A great movie ", 8);
-        return restTemplate.postForEntity("/reviews", reviewDTO, clazz);
+        return restTemplate.postForEntity("/api/reviews", reviewDTO, clazz);
     }
     
 
@@ -204,7 +204,7 @@ public class BackendIntegrationTest {
         this.postAuthenticatedReview(movieId, userId, token, ExceptionController.ErrorResponse.class);
 
         //List<Review> reviews = restTemplate.getForEntity("/reviews", List.class).getBody();
-        List<Review> reviews = restTemplate.exchange("/reviews", HttpMethod.GET, null, listReview_t).getBody();
+        List<Review> reviews = restTemplate.exchange("/api/reviews", HttpMethod.GET, null, listReview_t).getBody();
         assertThat(reviews.size()).isOne();
     }
 
@@ -252,7 +252,7 @@ public class BackendIntegrationTest {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(token);
         HttpEntity<ReviewDTO> postReviewHttpEntity = new HttpEntity<>(reviewDTO, headers);
-        return restTemplate.exchange("/reviews", HttpMethod.POST, postReviewHttpEntity, clazz);
+        return restTemplate.exchange("/api/reviews", HttpMethod.POST, postReviewHttpEntity, clazz);
     }
 
     private <T> ResponseEntity<T> postAuthenticatedReview(Long movieId, Long userId, String token, Class<T> clazz){
@@ -261,7 +261,7 @@ public class BackendIntegrationTest {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(token);
         HttpEntity<ReviewDTO> postReviewHttpEntity = new HttpEntity<>(reviewDTO, headers);
-        return restTemplate.exchange("/reviews", HttpMethod.POST, postReviewHttpEntity, clazz);
+        return restTemplate.exchange("/api/reviews", HttpMethod.POST, postReviewHttpEntity, clazz);
     }
 
     @Test
@@ -293,10 +293,10 @@ public class BackendIntegrationTest {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(token);
         HttpEntity<ReviewDTO> postReviewHttpEntity = new HttpEntity<>(reviewDTO, headers);
-        ResponseEntity<ReviewDTO> postReviewResponse = restTemplate.exchange("/reviews", HttpMethod.POST, postReviewHttpEntity, ReviewDTO.class);
+        ResponseEntity<ReviewDTO> postReviewResponse = restTemplate.exchange("/api/reviews", HttpMethod.POST, postReviewHttpEntity, ReviewDTO.class);
         
         assertThat(postReviewResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
-        List<Review> reviews = restTemplate.exchange("/reviews", HttpMethod.GET, null, listReview_t).getBody();
+        List<Review> reviews = restTemplate.exchange("/api/reviews", HttpMethod.GET, null, listReview_t).getBody();
         assertThat(reviews.size()).isOne();
         
     }
@@ -327,7 +327,7 @@ public class BackendIntegrationTest {
         ResponseEntity<ExceptionController.ErrorResponse> postMovieResponse = this.postAuthenticatedReview(reviewDTO, token, ExceptionController.ErrorResponse.class);
         assertThat(postMovieResponse.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
 
-        List<Review> reviews = restTemplate.exchange("/reviews", HttpMethod.GET, null, listReview_t).getBody();
+        List<Review> reviews = restTemplate.exchange("/api/reviews", HttpMethod.GET, null, listReview_t).getBody();
         assertThat(reviews.size()).isZero();
 
     }
@@ -356,6 +356,14 @@ public class BackendIntegrationTest {
         reviewScore = assertDoesNotThrow(() -> reviewService.getAverageReviewScoreForMovie(movieId));
         assertThat(reviewScore).isEqualTo(0.0);
         
+    }
+
+    @Test
+    public void testGetUserById(){
+        Long userId = this.postUser().getBody().getId();
+
+        ResponseEntity<User> response = restTemplate.getForEntity("/users/"+userId, User.class);
+        assertThat(response.getBody().getId()).isEqualTo(userId);
     }
     // TODO: Test for patching a review
     // TODO: Test user can't register with blank username / email / password 
