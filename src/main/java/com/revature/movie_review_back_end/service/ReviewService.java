@@ -76,7 +76,7 @@ public class ReviewService {
     }
     
     public ReviewDTO getReviewByMovieAndUser(Long movieId, Long userId) throws ReviewNotFoundException{
-        Review review = reviewRepository.findByMovieIdAndUserId(movieId, userId).orElseThrow(()->new ReviewNotFoundException(""));
+        Review review = reviewRepository.findByMovieIdAndUserId(movieId, userId).orElseThrow(()->new ReviewNotFoundException("No movie found for movieId of "+movieId+" and userId of " + userId));
         return ReviewDTO.convertToDto(review);
     }
 
